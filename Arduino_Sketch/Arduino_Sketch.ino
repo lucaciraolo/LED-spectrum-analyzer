@@ -34,13 +34,12 @@ void setup() {
   strip.show(); // Initialize all pixels to 'off'
 
 
-  colorWipe(strip.Color(255, 0, 0), 30); // Red
-  colorWipe(strip.Color(0, 255, 0), 30); // Green
-  colorWipe(strip.Color(0, 0, 255), 30); // Blue
+//  colorWipe(strip.Color(255, 0, 0), 30); // Red
+//  colorWipe(strip.Color(0, 255, 0), 30); // Green
+//  colorWipe(strip.Color(0, 0, 255), 30); // Blue
 }
 
 void loop() {
-
 
   //FHT Loop
   for (int i = 0 ; i < FHT_N ; i++) { // save 256 samples
@@ -60,22 +59,22 @@ void loop() {
   sei();
     
   //Averaging the FHT results
-  int val = (FHT_N / 2 - 2) / COLUMNS;
-  double total = 0;
-  for (int i = 2; i < FHT_N / 2; i++) {
+  int binsToAverage = (FHT_N / 2) / COLUMNS;
+  double total = 100;
+  for (int i = 2; i <= FHT_N / 2; i++) {
 //      Serial.println(total);
 
-    if ((i - 2) % val != 0) {
+    if (i % binsToAverage != 0) {
 //      Serial.print(i);
 //      Serial.print(" ");
 //      Serial.println(fht_log_out[i]);
       total =+ fht_log_out[i];
     } else {
-      int index = (i - 2) / val;
+      int index = i / binsToAverage;
 //      Serial.print(index);
 //      Serial.print(" ");
 
-      double newAverage = total / val;
+      double newAverage = total / binsToAverage;
       
 //      Serial.println(total);
       
@@ -85,8 +84,12 @@ void loop() {
       }
 //      Serial.println(newAverage);
       if (index == 0) {
-//        Serial.println(total);
+        Serial.println(total);
       }
+//      Serial.print("outputArray[");
+//      Serial.print(index);
+//      Serial.print("] = ");
+//      Serial.println(newAverage/maximum);
       outputArray[index - 1] = newAverage / maximum;
 //              Serial.println(maximums[index]);
       total = 0;
@@ -94,7 +97,7 @@ void loop() {
   }
 
 //  for (int i = 0; i < COLUMNS; i++) {
-//    outputArray[i] = 1;
+//    outputArray[i] = 0.5;
 //  }
 //  Serial.println(millis());
   
@@ -107,6 +110,11 @@ void loop() {
       setColumn();
       strip.show();
       timer = millis();
+
+//      Serial.println("start");
+//      for (int i = 0; i < COLUMNS; ++i) {
+//      	Serial.println(outputArray[i]);
+//      }
 //      if (millis() - colourChangeDelayTimer > 100) {
 //        oldR = (oldR + 85) % 256;
 //        oldG = (oldG + 170) % 256;
@@ -142,7 +150,12 @@ void setColumn() {
       int currentPixel = i * ROWS + j;
       if (i % 2 == 0) {
         //count up
+//        Serial.print(currentPixel);
+//        Serial.print(" ");
+//        Serial.println((i * ROWS) + targetHeight);
+        
         if (currentPixel < (i * ROWS) + targetHeight) {
+
           int r = oldR;
           int g = oldG;
           int b = oldB;
