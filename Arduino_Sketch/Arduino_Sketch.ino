@@ -10,7 +10,7 @@ const int COLUMNS = 7;
 const int ROWS = 7;
 
 unsigned long timer = 0;
-unsigned long colourChangeDelayTimer = 0;
+
 int oldR = 255;
 int oldG = 0;
 int oldB = 0;
@@ -32,6 +32,8 @@ void setup() {
   //NeoPixel initialization
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+
+
   colorWipe(strip.Color(255, 0, 0), 30); // Red
   colorWipe(strip.Color(0, 255, 0), 30); // Green
   colorWipe(strip.Color(0, 0, 255), 30); // Blue
@@ -85,7 +87,7 @@ void loop() {
       if (index == 0) {
 //        Serial.println(total);
       }
-      outputArray[index] = newAverage / maximum;
+      outputArray[index - 1] = newAverage / maximum;
 //              Serial.println(maximums[index]);
       total = 0;
     }
@@ -110,7 +112,7 @@ void loop() {
 //        oldG = (oldG + 170) % 256;
 //        oldB = (oldB + 255) % 256;
 //      }
-      colourChangeDelayTimer = millis();
+     
       
     }
 
