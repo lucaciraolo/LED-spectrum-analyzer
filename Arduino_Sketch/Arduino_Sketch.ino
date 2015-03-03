@@ -9,27 +9,38 @@
 const int COLUMNS = 7;
 const int ROWS = 7;
 
-unsigned long count = 0;
+unsigned long timer = 0;
+unsigned long colourChangeDelayTimer = 0;
+int oldR = 255;
+int oldG = 0;
+int oldB = 0;
 
-double maximums[COLUMNS] ;
+double maximum;
 double outputArray[COLUMNS];
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(ROWS * COLUMNS, PIN, NEO_GRB + NEO_KHZ800);
 
 void setup() {
+  
   Serial.begin(115200);
+  
+  //FHT initialization
   ADCSRA = 0xe5; // set the adc to free running mode
   ADMUX = 0x40; // use adc0
   DIDR0 = 0x01; // turn off the digital input for adc0
+  
+  //NeoPixel initialization
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+  colorWipe(strip.Color(255, 0, 0), 30); // Red
+  colorWipe(strip.Color(0, 255, 0), 30); // Green
+  colorWipe(strip.Color(0, 0, 255), 30); // Blue
 }
 
 void loop() {
-//  colorWipe(strip.Color(255, 0, 0), 50); // Red
-//  colorWipe(strip.Color(0, 255, 0), 50); // Green
-//  colorWipe(strip.Color(0, 0, 255), 50); // Blue
 
+
+  //FHT Loop
   for (int i = 0 ; i < FHT_N ; i++) { // save 256 samples
       while(!(ADCSRA & 0x10)); // wait for adc to be ready
       ADCSRA = 0xf5; // restart adc
@@ -45,13 +56,8 @@ void loop() {
   fht_run(); // process the data in the fht
   fht_mag_log(); // take the output of the fht
   sei();
-  
-//  Serial.println("start");
-//    for (byte i = 0 ; i < FHT_N/2 ; i++) {
-//      Serial.println(fht_log_out[i]); // send out the data
-//    }
     
-  
+  //Averaging the FHT results
   int val = (FHT_N / 2 - 2) / COLUMNS;
   double total = 0;
   for (int i = 2; i < FHT_N / 2; i++) {
@@ -72,14 +78,14 @@ void loop() {
 //      Serial.println(total);
       
       
-      if (newAverage > maximums[index]) {
-        maximums[index] = newAverage;
+      if (newAverage > maximum) {
+        maximum = newAverage;
       }
 //      Serial.println(newAverage);
       if (index == 0) {
 //        Serial.println(total);
       }
-      outputArray[index] = newAverage / maximums[index];
+      outputArray[index] = newAverage / maximum;
 //              Serial.println(maximums[index]);
       total = 0;
     }
@@ -95,14 +101,19 @@ void loop() {
   
 //    Serial.write(fht_log_out, (FHT_N/2)); // send out the data
     
-  if (millis() - count > 50){
-    setColumn();
-    strip.show();
-    count = millis();
-  }
+    if (millis() - timer > 50) {
+      setColumn();
+      strip.show();
+      timer = millis();
+//      if (millis() - colourChangeDelayTimer > 100) {
+//        oldR = (oldR + 85) % 256;
+//        oldG = (oldG + 170) % 256;
+//        oldB = (oldB + 255) % 256;
+//      }
+      colourChangeDelayTimer = millis();
+      
+    }
 
-  
-//  delay(50);
 
 }
 
@@ -130,9 +141,9 @@ void setColumn() {
       if (i % 2 == 0) {
         //count up
         if (currentPixel < (i * ROWS) + targetHeight) {
-          int r = 255;
-          int g = 0;
-          int b = 0;
+          int r = oldR;
+          int g = oldG;
+          int b = oldB;
             
             
           strip.setPixelColor(currentPixel, strip.Color(g, r, b));
@@ -142,9 +153,9 @@ void setColumn() {
       } else {
         //count down
         if (currentPixel % ROWS >= ROWS - targetHeight) {
-          int r = 255;
-          int g = 0;
-          int b = 0;
+          int r = oldR;
+          int g = oldG;
+          int b = oldB;
           
           strip.setPixelColor(currentPixel, strip.Color(g, r, b));
         } else {
