@@ -2,12 +2,12 @@ import ddf.minim.analysis.*;
 import ddf.minim.*;
 
 Minim minim;  
-AudioInput audioInput;
+AudioPlayer audioInput;
 FFT fftLin;
 OPC opc;
 
 final int LEDS_PER_COLUMN = 20;
-final int LEDS_PER_ROW = 30;
+final int LEDS_PER_ROW = 47;
 
 final int LED_PIXEL_WIDTH = 10;
 final int LED_PIXEL_HEIGHT = 10;
@@ -22,6 +22,7 @@ int countRow = 0;
 
 void setup()
 {
+  background(0);
   colorMode(HSB, 100);
    size((LED_PIXEL_WIDTH + LED_PIXEL_HORIZONTAL_SPACING) * LEDS_PER_ROW,
          (LED_PIXEL_HEIGHT + LED_PIXEL_VERTICAL_SPACING) * LEDS_PER_COLUMN);
@@ -29,11 +30,12 @@ void setup()
   opc = new OPC(this, "127.0.0.1", 7890);
  
   minim = new Minim(this);
-  audioInput = minim.getLineIn();
+  audioInput = minim.loadFile("Seve.mp3");
+  audioInput.loop();
   
   fftLin = new FFT( audioInput.bufferSize(), audioInput.sampleRate() );
-  fftLin.linAverages( LEDS_PER_ROW );
-//  fftLin.logAverages( 10, 5 );
+//  fftLin.linAverages( LEDS_PER_ROW );
+  fftLin.logAverages( 10, 4 );
   
   rectMode(CORNER);
 
@@ -49,7 +51,13 @@ void draw()
   //Populate the pixelArray with the FFT results
   for (int column = 0; column < pixelArray.length; column++) {
 //    println(fftLin.getAvg(column));
-    int lightBarHeight = Math.round(fftLin.getAvg(column) * 6);
+    int lightBarHeight;
+    if (column < (LEDS_PER_ROW / 2)) {
+      lightBarHeight = Math.round(fftLin.getAvg(column) * 0.25);
+    } else {
+      lightBarHeight = Math.round(fftLin.getAvg(column) * 0.5);
+    }
+
     for (int row = 0; row < pixelArray[0].length; row++) {
       if (row < lightBarHeight) {
         float hue = (millis() * 0.01 * 2.0) % 100; 
@@ -79,7 +87,7 @@ void draw()
 //    countRow += 1;
 //    opc.setPixel(513, color(255, 0, 0));
 //    opc.writePixels();
-    display(pixelArray);
+//    display(pixelArray);
     displayOnScreen(pixelArray);
     lastBoardRefresh = millis();
   }
@@ -92,7 +100,7 @@ void displayOnScreen(color[][] input) {
     for (int row = input[0].length - 1; row >= 0; row--) {
         fill(input[column][row]);
         if (input[column][row] == color(0, 0, 0)) {
-          fill(color(255,255,255));
+          fill(color(0, 0, 0));
         }
         int y = (input[0].length - row) * (LED_PIXEL_HEIGHT + LED_PIXEL_VERTICAL_SPACING);
         rect(x, y, LED_PIXEL_WIDTH, LED_PIXEL_HEIGHT);
