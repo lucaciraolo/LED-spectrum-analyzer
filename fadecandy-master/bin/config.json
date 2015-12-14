@@ -21,6 +21,13 @@
             "map": [
                 [ 0, 512, 0, 512 ]
             ]
+        },
+	{
+            "type": "fadecandy",
+            "serial": "FZZVAKAIQSDXJROJ",
+            "map": [
+                [ 0, 1024, 0, 512 ]
+            ]
         }
     ]
 }

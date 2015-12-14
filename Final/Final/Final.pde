@@ -87,7 +87,7 @@ void draw()
 //    countRow += 1;
 //    opc.setPixel(513, color(255, 0, 0));
 //    opc.writePixels();
-//    display(pixelArray);
+    display(pixelArray);
     displayOnScreen(pixelArray);
     lastBoardRefresh = millis();
   }
